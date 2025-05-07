@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import Benefits from '@/components/home/Benefits';
 import Testimonials from '@/components/home/Testimonials';
+import Pricing from '@/components/home/Pricing';
 
 const Index: React.FC = () => {
   return (
@@ -14,6 +15,7 @@ const Index: React.FC = () => {
         <Hero />
         <Benefits />
         <Testimonials />
+        <Pricing />
       </main>
       <Footer />
     </div>
