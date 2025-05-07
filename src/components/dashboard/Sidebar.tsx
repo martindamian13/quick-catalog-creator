@@ -13,6 +13,7 @@ import {
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -39,6 +40,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, label, to, active }) =>
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const path = location.pathname;
+  const { signOut } = useAuth();
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Inicio", to: "/dashboard" },
@@ -47,6 +49,10 @@ const Sidebar: React.FC = () => {
     { icon: <BarChart size={20} />, label: "Estadísticas", to: "/dashboard/estadisticas" },
     { icon: <Settings size={20} />, label: "Configuración", to: "/dashboard/configuracion" },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <aside className="w-64 hidden md:flex flex-col h-screen border-r bg-white">
@@ -73,11 +79,13 @@ const Sidebar: React.FC = () => {
           <Eye size={18} />
           <span>Ver catálogo público</span>
         </Link>
-        <Button variant="outline" className="w-full flex items-center gap-2 justify-center" asChild>
-          <Link to="/logout">
-            <LogOut size={18} />
-            <span>Cerrar sesión</span>
-          </Link>
+        <Button 
+          variant="outline" 
+          className="w-full flex items-center gap-2 justify-center"
+          onClick={handleSignOut}
+        >
+          <LogOut size={18} />
+          <span>Cerrar sesión</span>
         </Button>
       </div>
     </aside>

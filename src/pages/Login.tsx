@@ -1,10 +1,31 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import Logo from '@/components/Logo';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const Login: React.FC = () => {
+  const { signIn, user, loading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // If user is already logged in, redirect to dashboard
+  if (user && !loading) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await signIn(email, password);
+    setIsSubmitting(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-soft">
@@ -20,20 +41,22 @@ const Login: React.FC = () => {
             </Link>
           </p>
         </div>
-        <form className="mt-8 space-y-6">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Correo electrónico
               </label>
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                className="input-field mt-1"
+                className="mt-1"
                 placeholder="tu@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -45,14 +68,16 @@ const Login: React.FC = () => {
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
-              <input
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="input-field mt-1"
+                className="mt-1"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>
@@ -63,6 +88,8 @@ const Login: React.FC = () => {
               name="remember-me"
               type="checkbox"
               className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
             />
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
               Recordar sesión
@@ -70,8 +97,19 @@ const Login: React.FC = () => {
           </div>
 
           <div>
-            <Button type="submit" className="w-full bg-action hover:bg-action/90">
-              Iniciar sesión
+            <Button 
+              type="submit" 
+              className="w-full bg-action hover:bg-action/90"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Iniciando sesión...
+                </>
+              ) : (
+                "Iniciar sesión"
+              )}
             </Button>
           </div>
         </form>
