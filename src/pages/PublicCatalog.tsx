@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, WhatsApp } from 'lucide-react';
+import { Phone, Mail, MessageSquare } from 'lucide-react';
 
 const PublicCatalog: React.FC = () => {
   const [category, setCategory] = useState<string>('all');
@@ -68,7 +68,7 @@ const PublicCatalog: React.FC = () => {
                   className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                   style={{ color: businessInfo.primaryColor }}
                 >
-                  <WhatsApp size={20} />
+                  <MessageSquare size={20} />
                 </a>
               )}
               
@@ -174,7 +174,7 @@ const PublicCatalog: React.FC = () => {
                             color: "white"
                           }}
                         >
-                          <WhatsApp size={14} className="mr-1" />
+                          <MessageSquare size={14} className="mr-1" />
                           <span className="text-xs">Consultar</span>
                         </Button>
                       </a>
@@ -213,7 +213,7 @@ const PublicCatalog: React.FC = () => {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-soft hover:shadow-card transition-all"
               >
-                <WhatsApp size={18} style={{ color: businessInfo.primaryColor }} />
+                <MessageSquare size={18} style={{ color: businessInfo.primaryColor }} />
                 <span>WhatsApp</span>
               </a>
             )}

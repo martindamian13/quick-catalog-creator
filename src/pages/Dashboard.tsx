@@ -1,9 +1,8 @@
-
 import React from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Package, BarChart, Eye, Users } from 'lucide-react';
+import { Package, BarChart, Eye, Users, Settings } from 'lucide-react';
 
 interface StatCardProps {
   title: string;
