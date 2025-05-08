@@ -108,22 +108,22 @@ const Pricing: React.FC = () => {
   ];
 
   return (
-    <section id="precios" className="py-20 bg-gray-50">
+    <section id="precios" className="py-16 md:py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="font-semibold mb-4">Planes y Precios</h2>
-          <p className="text-xl text-gray-600">
+        <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-3 md:mb-4">Planes y Precios</h2>
+          <p className="text-lg md:text-xl text-gray-600">
             Elige el plan que mejor se adapte a tus necesidades
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <PricingPlan key={index} {...plan} />
           ))}
         </div>
         
-        <div className="mt-12 text-center max-w-2xl mx-auto">
+        <div className="mt-10 md:mt-12 text-center max-w-2xl mx-auto">
           <p className="text-gray-600">
             ¿Necesitas un plan personalizado para tu negocio? <a href="#contacto" className="text-primary hover:underline">Contáctanos</a>
           </p>
