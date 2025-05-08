@@ -82,34 +82,27 @@ const Pricing: React.FC = () => {
       features: [
         { text: "Hasta 20 productos", included: true },
         { text: "1 catálogo público básico", included: true },
-        { text: "Sin personalización de diseño", included: true },
         { text: "Botón de contacto WhatsApp", included: true },
-        { text: "Branding 'Powered by CataloGo'", included: true },
-        { text: "3 catálogos distintos", included: false },
-        { text: "Personalización de colores y logo", included: false },
-        { text: "Estadísticas de visitas", included: false },
-        { text: "Dominio personalizado", included: false },
+        { text: "Personalización básica de colores y logo", included: false },
+        { text: "Estadísticas simples de visitas", included: false },
       ],
       ctaText: "Comenzar gratis",
       ctaLink: "/register",
       popular: false
     },
     {
-      name: "Plan Pro",
+      name: "Plan Advanced",
       price: "Gs. 150.000",
       description: "Para negocios que buscan crecer y profesionalizar su presencia",
       features: [
-        { text: "Hasta 150 productos", included: true },
-        { text: "3 catálogos distintos", included: true },
+        { text: "Hasta 50 productos", included: true },
         { text: "Personalización básica de colores y logo", included: true },
         { text: "Estadísticas simples de visitas", included: true },
-        { text: "Dominio personalizado tipo tunegocio.misitio.com", included: true },
-        { text: "Sin marca de agua ni 'Powered by'", included: true },
+        { text: "Botón de contacto WhatsApp", included: true },
         { text: "Soporte prioritario", included: true },
-        { text: "Actualizaciones ilimitadas", included: true },
       ],
-      ctaText: "Actualizar a Pro",
-      ctaLink: "/register?plan=pro",
+      ctaText: "Actualizar a Advanced",
+      ctaLink: "/register?plan=advanced",
       popular: true
     }
   ];
