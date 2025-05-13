@@ -9,10 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      businesses: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          allow_analytics: boolean | null
+          allow_custom_domain: boolean | null
+          id: number
+          max_catalogs: number | null
+          max_products: number | null
+          name: string
+          price: number
+        }
+        Insert: {
+          allow_analytics?: boolean | null
+          allow_custom_domain?: boolean | null
+          id?: number
+          max_catalogs?: number | null
+          max_products?: number | null
+          name: string
+          price: number
+        }
+        Update: {
+          allow_analytics?: boolean | null
+          allow_custom_domain?: boolean | null
+          id?: number
+          max_catalogs?: number | null
+          max_products?: number | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
-          business_name: string | null
           created_at: string | null
           first_name: string | null
           id: string
@@ -21,7 +80,6 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
-          business_name?: string | null
           created_at?: string | null
           first_name?: string | null
           id: string
@@ -30,7 +88,6 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
-          business_name?: string | null
           created_at?: string | null
           first_name?: string | null
           id?: string
@@ -38,6 +95,41 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          end_date: string | null
+          id: string
+          plan_id: number | null
+          start_date: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          end_date?: string | null
+          id: string
+          plan_id?: number | null
+          start_date?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          end_date?: string | null
+          id?: string
+          plan_id?: number | null
+          start_date?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
