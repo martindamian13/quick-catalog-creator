@@ -32,8 +32,7 @@ const Register: React.FC = () => {
       password, 
       { 
         first_name: firstName,
-        last_name: lastName,
-        business_name: businessName
+        last_name: lastName
       }
     );
     setIsSubmitting(false);
@@ -87,21 +86,6 @@ const Register: React.FC = () => {
                   onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
-            </div>
-            <div>
-              <label htmlFor="business-name" className="block text-sm font-medium text-gray-700">
-                Nombre de tu negocio
-              </label>
-              <Input
-                id="business-name"
-                name="business-name"
-                type="text"
-                required
-                className="mt-1"
-                placeholder="Mi Negocio"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-              />
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

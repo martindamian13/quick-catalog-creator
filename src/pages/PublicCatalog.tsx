@@ -13,9 +13,9 @@ const PublicCatalog: React.FC = () => {
     description: "Ofrecemos productos de calidad para nuestros clientes. Envíos a toda la ciudad.",
     primaryColor: "#33C3F0",
     contact: {
-      phone: "+1 234 567 890",
-      email: "contacto@mitienda.com",
-      whatsapp: "+1 234 567 890"
+      phone: "+595 973 229 057",
+      email: "martinquintana668@gmail.com",
+      whatsapp: "+595 973 229 057"
     }
   };
   

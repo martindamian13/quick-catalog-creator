@@ -8,7 +8,7 @@ import { toast } from '@/hooks/use-toast';
 interface AuthContextProps {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, metadata: { first_name: string; last_name: string; business_name: string }) => Promise<void>;
+  signUp: (email: string, password: string, metadata: { first_name: string; last_name: string }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
