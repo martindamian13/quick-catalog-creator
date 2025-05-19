@@ -80,7 +80,7 @@ const Pricing: React.FC = () => {
       price: "Gratis",
       description: "Ideal para pequeños negocios que están comenzando",
       features: [
-        { text: "Hasta 20 productos", included: true },
+        { text: "Hasta 10 productos", included: true },
         { text: "1 catálogo público básico", included: true },
         { text: "Botón de contacto WhatsApp", included: true },
         { text: "Personalización básica de colores y logo", included: false },
@@ -95,7 +95,7 @@ const Pricing: React.FC = () => {
       price: "Gs. 150.000",
       description: "Para negocios que buscan crecer y profesionalizar su presencia",
       features: [
-        { text: "Hasta 50 productos", included: true },
+        { text: "Hasta 30 productos", included: true },
         { text: "Personalización básica de colores y logo", included: true },
         { text: "Estadísticas simples de visitas", included: true },
         { text: "Botón de contacto WhatsApp", included: true },
