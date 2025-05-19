@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Session, User } from '@supabase/supabase-js';
@@ -8,7 +7,15 @@ import { toast } from '@/hooks/use-toast';
 interface AuthContextProps {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, metadata: { first_name: string; last_name: string }) => Promise<void>;
+  signUp: (
+    email: string, 
+    password: string, 
+    metadata: { 
+      first_name: string; 
+      last_name: string; 
+      business_name: string 
+    }
+  ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -25,17 +32,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Manejar notificaciones de cambio de estado
         if (event === 'SIGNED_IN') {
           toast({
             title: "¡Bienvenido!",
             description: "Has iniciado sesión correctamente."
           });
+          
+          // Verificar si el usuario tiene negocio creado
+          if (session?.user) {
+            try {
+              // @ts-ignore - Ignorar errores de tipo en consultas de Supabase
+              const { data: business } = await supabase
+                .from('businesses')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+            
+              if (!business) {
+                navigate('/create-business');
+              }
+            } catch (error) {
+              console.error('Error al verificar negocio:', error);
+            }
+          }
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "¡Hasta pronto!",
@@ -45,39 +70,110 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Cargar sesión inicial
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+    };
 
+    loadSession();
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, metadata: { first_name: string; last_name: string; business_name: string }) => {
+  const signUp = async (
+    email: string, 
+    password: string, 
+    metadata: { 
+      first_name: string; 
+      last_name: string; 
+      business_name: string 
+    }
+  ) => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Iniciando registro con:', { email, metadata });
+      
+      // Paso 1: Crear usuario en autenticación
+      const { data: { user }, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: metadata
+          data: {
+            first_name: metadata.first_name,
+            last_name: metadata.last_name
+          }
         }
       });
 
-      if (error) throw error;
+      if (authError) {
+        console.error('Error en autenticación:', authError);
+        throw authError;
+      }
       
+      if (!user) {
+        console.error('No se recibió usuario después del registro');
+        throw new Error('Error al crear usuario: No se recibió respuesta del servidor');
+      }
+
+      console.log('Usuario creado exitosamente:', user.id);
+
+      // Paso 2: Crear registro en tabla pública users
+      const { error: userError } = await supabase.from('users').insert({
+        id: user.id,
+        first_name: metadata.first_name,
+        last_name: metadata.last_name,
+        accepted_terms: true
+      });
+
+      if (userError) {
+        console.error('Error al crear perfil de usuario:', userError);
+        throw userError;
+      }
+
+      console.log('Perfil de usuario creado exitosamente');
+
+      // Paso 3: Crear negocio asociado
+      const { error: businessError } = await supabase.from('businesses').insert({
+        user_id: user.id,
+        name: metadata.business_name,
+        primary_color: '#33C3F0' // Color por defecto
+      });
+
+      if (businessError) {
+        console.error('Error al crear negocio:', businessError);
+        throw businessError;
+      }
+
+      console.log('Negocio creado exitosamente');
+
+      // Notificación y redirección
       toast({
         title: "¡Cuenta creada con éxito!",
-        description: "Por favor, verifica tu correo para confirmar tu cuenta."
+        description: "Bienvenido a tu nuevo negocio virtual"
       });
       navigate('/dashboard');
+
     } catch (error: any) {
+      console.error('Error completo en el registro:', error);
+      
+      // Mensaje de error más descriptivo
+      let errorMessage = 'Error desconocido';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.error_description) {
+        errorMessage = error.error_description;
+      } else if (error.details) {
+        errorMessage = error.details;
+      }
+      
       toast({
-        title: "Error al crear la cuenta",
-        description: error.message,
+        title: "Error en el registro",
+        description: errorMessage,
         variant: "destructive"
       });
+      throw error;
     }
   };
 
@@ -96,6 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
         variant: "destructive"
       });
+      throw error;
     }
   };
 
@@ -110,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: error.message,
         variant: "destructive"
       });
+      throw error;
     }
   };
 

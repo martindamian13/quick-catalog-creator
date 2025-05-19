@@ -39,6 +39,52 @@ export type Database = {
         }
         Relationships: []
       }
+      businesses: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          primary_color: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          primary_color: string
+          created_at?: string | null
+        }
+        Update: {
+          user_id?: string
+          name?: string
+          primary_color?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          id: string
+          first_name: string
+          last_name: string
+          accepted_terms: boolean
+          created_at: string | null
+        }
+        Insert: {
+          id: string
+          first_name: string
+          last_name: string
+          accepted_terms: boolean
+          created_at?: string | null
+        }
+        Update: {
+          first_name?: string
+          last_name?: string
+          accepted_terms?: boolean
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

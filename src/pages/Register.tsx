@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,15 +26,33 @@ const Register: React.FC = () => {
     if (!termsAccepted) return;
     
     setIsSubmitting(true);
-    await signUp(
-      email, 
-      password, 
-      { 
+    try {
+      await signUp(email, password, {
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        business_name: businessName
+      });
+    } catch (error: any) {
+      console.error('Error en registro:', error);
+      
+      // Mostrar mensaje de error más específico
+      let errorMessage = 'Error al crear la cuenta. Por favor, intenta nuevamente.';
+      
+      if (error.message) {
+        if (error.message.includes('network')) {
+          errorMessage = 'Error de conexión. Por favor, verifica tu conexión a internet e intenta nuevamente.';
+        } else if (error.message.includes('email')) {
+          errorMessage = 'El correo electrónico ya está en uso o no es válido.';
+        } else if (error.message.includes('password')) {
+          errorMessage = 'La contraseña no cumple con los requisitos mínimos.';
+        }
       }
-    );
-    setIsSubmitting(false);
+      
+      // Aquí podrías usar un componente de toast o alerta para mostrar el error
+      alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -86,6 +103,21 @@ const Register: React.FC = () => {
                   onChange={(e) => setLastName(e.target.value)}
                 />
               </div>
+            </div>
+            <div>
+              <label htmlFor="business-name" className="block text-sm font-medium text-gray-700">
+                Nombre de tu Negocio
+              </label>
+              <Input
+                id="business-name"
+                name="business-name"
+                type="text"
+                required
+                className="mt-1"
+                placeholder="Mi Tienda Online"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+              />
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
