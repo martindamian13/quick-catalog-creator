@@ -1,26 +1,50 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/dashboard/Sidebar';
 import { Button } from '@/components/ui/button';
-import { ImagePlus } from 'lucide-react';
+import { ImagePlus, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+
+interface Business {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string;
+  contact_phone: string;
+  contact_email: string;
+  contact_whatsapp: string;
+  logo_url: string;
+  primary_color: string;
+  created_at: string;
+  address?: string;
+  website?: string;
+  instagram?: string;
+}
 
 const Settings: React.FC = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  // Estado inicial basado en la estructura de la base de datos
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    contact_phone: '',
+    contact_email: '',
+    address: '',
+    website: '',
+    logo_url: '',
+    primary_color: '#33C3F0',
+    contact_whatsapp: '',
+    instagram: ''
+  });
+
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState('#33C3F0');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setLogoPreview(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
+  // Colores predefinidos
   const colorOptions = [
     { value: '#33C3F0', label: 'Azul' },
     { value: '#F97316', label: 'Naranja' },
@@ -29,6 +53,142 @@ const Settings: React.FC = () => {
     { value: '#EF4444', label: 'Rojo' },
     { value: '#6366F1', label: 'Índigo' },
   ];
+
+  // Cargar datos iniciales del negocio
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('businesses')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) throw error;
+        if (!data) throw new Error('Negocio no encontrado');
+
+        const businessData = data as Business;
+
+        // Actualizar estados con datos de la base de datos
+        setFormData({
+          name: businessData.name || '',
+          description: businessData.description || '',
+          contact_phone: businessData.contact_phone || '',
+          contact_email: businessData.contact_email || '',
+          address: businessData.address || '',
+          website: businessData.website || '',
+          logo_url: businessData.logo_url || '',
+          primary_color: businessData.primary_color || '#33C3F0',
+          contact_whatsapp: businessData.contact_whatsapp || '',
+          instagram: businessData.instagram || ''
+        });
+
+        if (businessData.logo_url) setLogoPreview(businessData.logo_url);
+        
+      } catch (error) {
+        toast({
+          title: "Error al cargar datos",
+          description: error instanceof Error ? error.message : 'Error desconocido',
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBusinessData();
+  }, [user]);
+
+  // Manejar cambios en los inputs
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Manejar subida de logo
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Previsualización
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) setLogoPreview(e.target.result as string);
+    };
+    reader.readAsDataURL(file);
+    setLogoFile(file);
+  };
+
+  // Subir logo a Supabase Storage
+  const uploadLogo = async () => {
+    if (!logoFile || !user) return;
+
+    const filePath = `logos/${user.id}/${Date.now()}_${logoFile.name}`;
+    
+    const { data, error } = await supabase.storage
+      .from('business-assets')
+      .upload(filePath, logoFile);
+
+    if (error) throw error;
+
+    return supabase.storage
+      .from('business-assets')
+      .getPublicUrl(data.path).data.publicUrl;
+  };
+
+  // Enviar formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      let logoUrl = formData.logo_url;
+      
+      // Subir nuevo logo si existe
+      if (logoFile) {
+        logoUrl = await uploadLogo();
+      }
+
+      // Actualizar datos en Supabase
+      const { error } = await supabase
+        .from('businesses')
+        .update({
+          ...formData,
+          logo_url: logoUrl,
+          primary_color: formData.primary_color
+        })
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "¡Configuración guardada!",
+        description: "Los cambios se han aplicado correctamente"
+      });
+      
+    } catch (error) {
+      toast({
+        title: "Error al guardar",
+        description: error instanceof Error ? error.message : 'Error desconocido',
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 overflow-auto p-8 flex items-center justify-center">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -41,19 +201,22 @@ const Settings: React.FC = () => {
           </div>
           
           <div className="bg-white rounded-xl shadow-soft">
-            <form className="p-6">
+            <form className="p-6" onSubmit={handleSubmit}>
               <div className="space-y-8">
+                {/* Sección Información de la Empresa */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-medium border-b pb-2">Información de la empresa</h2>
                   
                   <div>
-                    <label htmlFor="business-name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre de la empresa o tienda*
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nombre de la empresa*
                     </label>
                     <input
                       type="text"
-                      id="business-name"
-                      name="business-name"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="input-field"
                       placeholder="Ej: Mi Tienda Online"
                       required
@@ -67,36 +230,44 @@ const Settings: React.FC = () => {
                     <textarea
                       id="description"
                       name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
                       rows={3}
                       className="input-field"
                       placeholder="Describe tu negocio en pocas palabras..."
-                    ></textarea>
+                    />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Teléfono de contacto
+                      <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700 mb-1">
+                        Teléfono de contacto*
                       </label>
                       <input
                         type="tel"
-                        id="phone"
-                        name="phone"
+                        id="contact_phone"
+                        name="contact_phone"
+                        value={formData.contact_phone}
+                        onChange={handleInputChange}
                         className="input-field"
                         placeholder="+1 234 567 890"
+                        required
                       />
                     </div>
                     
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Correo electrónico de contacto
+                      <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Correo electrónico*
                       </label>
                       <input
                         type="email"
-                        id="email"
-                        name="email"
+                        id="contact_email"
+                        name="contact_email"
+                        value={formData.contact_email}
+                        onChange={handleInputChange}
                         className="input-field"
                         placeholder="contacto@mitienda.com"
+                        required
                       />
                     </div>
                   </div>
@@ -104,12 +275,14 @@ const Settings: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                        Dirección (opcional)
+                        Dirección
                       </label>
                       <input
                         type="text"
                         id="address"
                         name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
                         className="input-field"
                         placeholder="Calle, número, ciudad, país"
                       />
@@ -117,19 +290,22 @@ const Settings: React.FC = () => {
                     
                     <div>
                       <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-                        Sitio web (opcional)
+                        Sitio web
                       </label>
                       <input
                         type="url"
                         id="website"
                         name="website"
+                        value={formData.website}
+                        onChange={handleInputChange}
                         className="input-field"
                         placeholder="https://mitienda.com"
                       />
                     </div>
                   </div>
                 </div>
-                
+
+                {/* Sección Personalización */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-medium border-b pb-2">Personalización</h2>
                   
@@ -181,10 +357,10 @@ const Settings: React.FC = () => {
                           type="button"
                           className={`
                             h-12 rounded-lg transition-all flex flex-col items-center justify-center
-                            ${primaryColor === color.value ? 'ring-2 ring-offset-2 ring-gray-900' : 'hover:scale-105'}
+                            ${formData.primary_color === color.value ? 'ring-2 ring-offset-2 ring-gray-900' : 'hover:scale-105'}
                           `}
                           style={{ backgroundColor: color.value }}
-                          onClick={() => setPrimaryColor(color.value)}
+                          onClick={() => setFormData(prev => ({ ...prev, primary_color: color.value }))}
                         >
                           <span className="sr-only">{color.label}</span>
                         </button>
@@ -197,69 +373,35 @@ const Settings: React.FC = () => {
                       <input
                         type="color"
                         id="custom-color"
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        value={formData.primary_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
                         className="h-8 w-8 rounded cursor-pointer border-0"
                       />
                       <input
                         type="text"
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        value={formData.primary_color}
+                        onChange={(e) => setFormData(prev => ({ ...prev, primary_color: e.target.value }))}
                         className="input-field w-28"
                       />
                     </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Vista previa
-                    </label>
-                    <div 
-                      className="border rounded-lg p-6 bg-gray-50"
-                      style={{ '--example-color': primaryColor } as React.CSSProperties}
-                    >
-                      <div className="flex items-center gap-3 mb-4">
-                        {logoPreview ? (
-                          <img 
-                            src={logoPreview} 
-                            alt="Logo" 
-                            className="w-12 h-12 object-contain" 
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">Logo</div>
-                        )}
-                        <h3 className="font-medium text-lg">Mi Tienda Online</h3>
-                      </div>
-                      <div className="flex space-x-4">
-                        <div 
-                          className="rounded-lg p-3 text-white"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          Botón principal
-                        </div>
-                        <div 
-                          className="rounded-lg p-3 border-2 transition-colors"
-                          style={{ borderColor: primaryColor, color: primaryColor }}
-                        >
-                          Botón secundario
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-                
+
+                {/* Sección Redes Sociales */}
                 <div className="space-y-4">
                   <h2 className="text-lg font-medium border-b pb-2">Redes sociales</h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-1">
-                        WhatsApp para contacto
+                      <label htmlFor="contact_whatsapp" className="block text-sm font-medium text-gray-700 mb-1">
+                        WhatsApp
                       </label>
                       <input
                         type="tel"
-                        id="whatsapp"
-                        name="whatsapp"
+                        id="contact_whatsapp"
+                        name="contact_whatsapp"
+                        value={formData.contact_whatsapp}
+                        onChange={handleInputChange}
                         className="input-field"
                         placeholder="+1 234 567 890"
                       />
@@ -267,7 +409,7 @@ const Settings: React.FC = () => {
                     
                     <div>
                       <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-1">
-                        Instagram (opcional)
+                        Instagram
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -277,6 +419,8 @@ const Settings: React.FC = () => {
                           type="text"
                           id="instagram"
                           name="instagram"
+                          value={formData.instagram}
+                          onChange={handleInputChange}
                           className="input-field pl-7"
                           placeholder="usuario"
                         />
@@ -287,9 +431,19 @@ const Settings: React.FC = () => {
               </div>
               
               <div className="mt-10 flex justify-end space-x-4">
-                <Button variant="outline">Cancelar cambios</Button>
-                <Button type="submit" className="bg-action hover:bg-action/90">
-                  Guardar configuración
+                <Button 
+                  type="submit" 
+                  className="bg-action hover:bg-action/90"
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar configuración"
+                  )}
                 </Button>
               </div>
             </form>

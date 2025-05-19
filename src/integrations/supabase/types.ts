@@ -9,85 +9,234 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          business_name: string | null
-          created_at: string | null
-          first_name: string | null
-          id: string
-          last_name: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          business_name?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id: string
-          last_name?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          business_name?: string | null
-          created_at?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       businesses: {
         Row: {
-          id: string
-          user_id: string
-          name: string
-          primary_color: string
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          contact_whatsapp: string | null
           created_at: string | null
+          description: string | null
+          id: string
+          instagram: string | null
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          user_id: string
+          website: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          name: string
-          primary_color: string
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           created_at?: string | null
+          description?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          user_id: string
+          website?: string | null
         }
         Update: {
-          user_id?: string
-          name?: string
-          primary_color?: string
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_whatsapp?: string | null
           created_at?: string | null
+          description?: string | null
+          id?: string
+          instagram?: string | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          user_id?: string
+          website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "businesses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          business_id: string
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "categories_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          business_id: string
+          category_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number
+          stock: number
+        }
+        Insert: {
+          business_id: string
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price: number
+          stock?: number
+        }
+        Update: {
+          business_id?: string
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number
+          stock?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
-          id: string
-          first_name: string
-          last_name: string
           accepted_terms: boolean
           created_at: string | null
+          first_name: string
+          id: string
+          last_name: string
         }
         Insert: {
-          id: string
-          first_name: string
-          last_name: string
-          accepted_terms: boolean
-          created_at?: string | null
-        }
-        Update: {
-          first_name?: string
-          last_name?: string
           accepted_terms?: boolean
           created_at?: string | null
+          first_name: string
+          id: string
+          last_name: string
+        }
+        Update: {
+          accepted_terms?: boolean
+          created_at?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
         }
         Relationships: []
       }
+      visits: {
+        Row: {
+          business_id: string | null
+          created_at: string | null
+          id: string
+          product_id: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string | null
+          id?: string
+          product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visits_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_analytics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visits_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      business_analytics: {
+        Row: {
+          id: string | null
+          name: string | null
+          total_products: number | null
+          total_stock: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
