@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -14,6 +13,7 @@ import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -51,7 +51,16 @@ const Sidebar: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast({
+        title: "Error al cerrar sesión",
+        description: "No se pudo cerrar la sesión. Por favor, intenta nuevamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

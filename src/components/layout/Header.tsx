@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Menu, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { toast } from '@/components/ui/use-toast';
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -63,9 +63,18 @@ const Header: React.FC = () => {
                 <Button variant="outline" className="font-medium w-full">Dashboard</Button>
               </Link>
               <Button 
-                onClick={() => {
-                  signOut();
-                  setIsMenuOpen(false);
+                onClick={async () => {
+                  try {
+                    await signOut();
+                    setIsMenuOpen(false);
+                  } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    toast({
+                      title: "Error al cerrar sesión",
+                      description: "No se pudo cerrar la sesión. Por favor, intenta nuevamente.",
+                      variant: "destructive"
+                    });
+                  }
                 }} 
                 variant="ghost" 
                 className="text-gray-600 hover:text-primary w-full"
@@ -121,7 +130,18 @@ const Header: React.FC = () => {
                 <Button variant="outline" className="font-medium">Dashboard</Button>
               </Link>
               <Button 
-                onClick={signOut} 
+                onClick={async () => {
+                  try {
+                    await signOut();
+                  } catch (error) {
+                    console.error('Error al cerrar sesión:', error);
+                    toast({
+                      title: "Error al cerrar sesión",
+                      description: "No se pudo cerrar la sesión. Por favor, intenta nuevamente.",
+                      variant: "destructive"
+                    });
+                  }
+                }} 
                 variant="ghost" 
                 className="text-gray-600 hover:text-primary"
               >

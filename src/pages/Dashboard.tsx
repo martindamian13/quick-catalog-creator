@@ -82,15 +82,21 @@ const Dashboard: React.FC = () => {
     });
   
     useEffect(() => {
-      let isMounted = true; // Para prevenir estado en componente desmontado
+      let isMounted = true;
+      console.log('Dashboard: Iniciando carga de datos...');
       
       const fetchBusinessData = async () => {
         if (!user) {
-          if (isMounted) setLoading(false);
+          console.log('Dashboard: No hay usuario, redirigiendo a login');
+          if (isMounted) {
+            setLoading(false);
+            window.location.href = '/login';
+          }
           return;
         }
   
         try {
+          console.log('Dashboard: Obteniendo datos del negocio para usuario:', user.id);
           // 1. Obtener información del negocio
           const { data: businessData, error: businessError } = await supabase
             .from('businesses')
@@ -98,15 +104,23 @@ const Dashboard: React.FC = () => {
             .eq('user_id', user.id)
             .single();
   
-          if (businessError || !businessData) {
-            throw new Error(businessError?.message || 'Negocio no encontrado');
+          if (businessError) {
+            console.error('Dashboard: Error al obtener negocio:', businessError);
+            if (businessError.code === 'PGRST116') {
+              console.log('Dashboard: Negocio no encontrado, redirigiendo a crear negocio');
+              window.location.href = '/create-business';
+              return;
+            }
+            throw businessError;
           }
   
           if (!isMounted) return;
   
+          console.log('Dashboard: Negocio encontrado:', businessData.id);
           setBusiness(businessData);
   
           // 2. Obtener productos del negocio
+          console.log('Dashboard: Obteniendo productos del negocio');
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*, category:categories(name)')
@@ -114,16 +128,30 @@ const Dashboard: React.FC = () => {
             .order('created_at', { ascending: false })
             .limit(5);
   
-          if (productsError) throw productsError;
-          if (isMounted) setProducts(productsData || []);
+          if (productsError) {
+            console.error('Dashboard: Error al obtener productos:', productsError);
+            throw productsError;
+          }
+          
+          if (isMounted) {
+            console.log('Dashboard: Productos obtenidos:', productsData?.length || 0);
+            setProducts(productsData || []);
+          }
   
           // 3. Obtener estadísticas
-          const { count: totalProducts } = await supabase
+          console.log('Dashboard: Obteniendo estadísticas');
+          const { count: totalProducts, error: countError } = await supabase
             .from('products')
             .select('*', { count: 'exact' })
             .eq('business_id', businessData.id);
   
+          if (countError) {
+            console.error('Dashboard: Error al obtener conteo de productos:', countError);
+            throw countError;
+          }
+  
           if (isMounted) {
+            console.log('Dashboard: Estadísticas obtenidas');
             setStatsData(prev => ({
               ...prev,
               totalProducts: totalProducts || 0
@@ -132,16 +160,14 @@ const Dashboard: React.FC = () => {
   
         } catch (error) {
           if (isMounted) {
-            console.error('Error fetching data:', error);
+            console.error('Dashboard: Error completo:', error);
             setError(error instanceof Error ? error.message : 'Error desconocido');
-            
-            // Redirigir solo si es error de negocio no encontrado
-            if (error instanceof Error && error.message.includes('Negocio no encontrado')) {
-              window.location.href = '/create-business';
-            }
           }
         } finally {
-          if (isMounted) setLoading(false);
+          if (isMounted) {
+            console.log('Dashboard: Finalizando carga de datos');
+            setLoading(false);
+          }
         }
       };
   
@@ -149,7 +175,8 @@ const Dashboard: React.FC = () => {
       fetchBusinessData();
   
       return () => {
-        isMounted = false; // Limpiar al desmontar
+        console.log('Dashboard: Limpiando efecto');
+        isMounted = false;
       };
     }, [user]);
     
@@ -198,6 +225,25 @@ const Dashboard: React.FC = () => {
       icon: <Settings size={24} />
     }
   ];
+
+  // Si no hay usuario, mostrar estado de carga
+  if (!user) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 overflow-auto p-8 flex items-center justify-center">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 bg-gray-200 rounded-xl"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

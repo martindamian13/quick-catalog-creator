@@ -32,36 +32,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('AuthProvider: Inicializando...');
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+        console.log('AuthProvider: Evento de autenticación:', event, session?.user?.id);
+        
+        // Solo actualizar el estado si no estamos en proceso de cierre de sesión
+        if (event !== 'SIGNED_OUT') {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
         
         // Manejar notificaciones de cambio de estado
         if (event === 'SIGNED_IN') {
+          console.log('AuthProvider: Usuario inició sesión');
           toast({
             title: "¡Bienvenido!",
             description: "Has iniciado sesión correctamente."
           });
-          
-          // Verificar si el usuario tiene negocio creado
-          if (session?.user) {
-            try {
-              // @ts-ignore - Ignorar errores de tipo en consultas de Supabase
-              const { data: business } = await supabase
-                .from('businesses')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-            
-              if (!business) {
-                navigate('/create-business');
-              }
-            } catch (error) {
-              console.error('Error al verificar negocio:', error);
-            }
-          }
         } else if (event === 'SIGNED_OUT') {
+          console.log('AuthProvider: Usuario cerró sesión');
           toast({
             title: "¡Hasta pronto!",
             description: "Has cerrado sesión correctamente."
@@ -72,14 +63,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Cargar sesión inicial
     const loadSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+      console.log('AuthProvider: Cargando sesión inicial...');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('AuthProvider: Error al cargar sesión:', error);
+          throw error;
+        }
+        
+        console.log('AuthProvider: Sesión cargada:', session?.user?.id);
+        if (session) {
+          setSession(session);
+          setUser(session.user);
+        }
+      } catch (error) {
+        console.error('AuthProvider: Error en loadSession:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadSession();
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('AuthProvider: Limpiando suscripción');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (
@@ -178,15 +186,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('AuthProvider: Intentando iniciar sesión con:', email);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) throw error;
-      navigate('/dashboard');
+      if (error) {
+        console.error('AuthProvider: Error en signIn:', error);
+        throw error;
+      }
+
+      console.log('AuthProvider: Inicio de sesión exitoso:', data.user?.id);
+      
+      // Verificar si el usuario tiene negocio creado
+      if (data.user) {
+        try {
+          console.log('AuthProvider: Verificando negocio para usuario:', data.user.id);
+          const { data: business, error: businessError } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('user_id', data.user.id)
+            .single();
+          
+          if (businessError) {
+            console.error('AuthProvider: Error al verificar negocio:', businessError);
+            throw businessError;
+          }
+        
+          if (!business) {
+            console.log('AuthProvider: No se encontró negocio, redirigiendo a crear negocio');
+            navigate('/create-business');
+          } else {
+            console.log('AuthProvider: Negocio encontrado:', business.id);
+            navigate('/dashboard');
+          }
+        } catch (error) {
+          console.error('AuthProvider: Error al verificar negocio:', error);
+          throw error;
+        }
+      }
     } catch (error: any) {
+      console.error('AuthProvider: Error completo en signIn:', error);
       toast({
         title: "Error al iniciar sesión",
         description: error.message,
@@ -198,9 +240,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      // Limpiar el estado local primero
+      setUser(null);
+      setSession(null);
+      
+      // Limpiar el almacenamiento local
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Cerrar sesión en Supabase
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      navigate('/');
+      
+      // Forzar una recarga limpia de la página
+      window.location.href = '/';
     } catch (error: any) {
       toast({
         title: "Error al cerrar sesión",

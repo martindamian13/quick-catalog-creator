@@ -144,6 +144,11 @@ const Settings: React.FC = () => {
     setSaving(true);
 
     try {
+      // Validar datos requeridos
+      if (!formData.name || !formData.contact_phone || !formData.contact_email) {
+        throw new Error('Por favor complete todos los campos requeridos');
+      }
+
       let logoUrl = formData.logo_url;
       
       // Subir nuevo logo si existe
@@ -151,17 +156,30 @@ const Settings: React.FC = () => {
         logoUrl = await uploadLogo();
       }
 
+      // Preparar datos para actualización
+      const updateData = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        contact_phone: formData.contact_phone.trim(),
+        contact_email: formData.contact_email.trim(),
+        address: formData.address?.trim() || null,
+        website: formData.website?.trim() || null,
+        logo_url: logoUrl || null,
+        primary_color: formData.primary_color,
+        contact_whatsapp: formData.contact_whatsapp?.trim() || null,
+        instagram: formData.instagram?.trim() || null
+      };
+
       // Actualizar datos en Supabase
       const { error } = await supabase
         .from('businesses')
-        .update({
-          ...formData,
-          logo_url: logoUrl,
-          primary_color: formData.primary_color
-        })
+        .update(updateData)
         .eq('user_id', user?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error de Supabase:', error);
+        throw new Error(error.message || 'Error al actualizar los datos');
+      }
 
       toast({
         title: "¡Configuración guardada!",
@@ -169,9 +187,10 @@ const Settings: React.FC = () => {
       });
       
     } catch (error) {
+      console.error('Error completo:', error);
       toast({
         title: "Error al guardar",
-        description: error instanceof Error ? error.message : 'Error desconocido',
+        description: error instanceof Error ? error.message : 'Error desconocido al guardar la configuración',
         variant: "destructive"
       });
     } finally {
@@ -250,7 +269,7 @@ const Settings: React.FC = () => {
                         value={formData.contact_phone}
                         onChange={handleInputChange}
                         className="input-field"
-                        placeholder="+1 234 567 890"
+                        placeholder="+595 973 229 057"
                         required
                       />
                     </div>
@@ -403,7 +422,7 @@ const Settings: React.FC = () => {
                         value={formData.contact_whatsapp}
                         onChange={handleInputChange}
                         className="input-field"
-                        placeholder="+1 234 567 890"
+                        placeholder="+595 973 229 057"
                       />
                     </div>
                     
