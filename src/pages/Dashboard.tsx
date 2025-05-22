@@ -350,7 +350,7 @@ const Dashboard: React.FC = () => {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            ${product.price.toFixed(2)}
+                            ${product.price}
                           </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
