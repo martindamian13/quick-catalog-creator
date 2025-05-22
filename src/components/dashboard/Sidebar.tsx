@@ -45,8 +45,8 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Inicio", to: "/dashboard" },
     { icon: <Package size={20} />, label: "Productos", to: "/dashboard/productos" },
-    { icon: <Users size={20} />, label: "Clientes", to: "/dashboard/clientes" },
-    { icon: <BarChart size={20} />, label: "Estadísticas", to: "/dashboard/estadisticas" },
+    // { icon: <Users size={20} />, label: "Clientes", to: "/dashboard/clientes" },
+    // { icon: <BarChart size={20} />, label: "Estadísticas", to: "/dashboard/estadisticas" },
     { icon: <Settings size={20} />, label: "Configuración", to: "/dashboard/configuracion" },
   ];
 
@@ -84,7 +84,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="p-4 border-t">
-        <Link to="/dashboard/preview" className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors mb-4">
+        <Link to="/dashboard/preview" className="hidden flex items-center gap-2 text-primary hover:text-primary/90 transition-colors mb-4">
           <Eye size={18} />
           <span>Ver catálogo público</span>
         </Link>

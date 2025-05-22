@@ -185,28 +185,28 @@ const Dashboard: React.FC = () => {
       title: "Total Productos",
       value: statsData.totalProducts.toString(),
       icon: <Package size={20} />,
-      change: "+3 nuevos",
-      positive: true
+      //change: "+3 nuevos",
+      //positive: true
     },
     {
       title: "Visitas este mes",
       value: statsData.monthlyVisits.toString(),
       icon: <Eye size={20} />,
-      change: "+12%",
-      positive: true
+      //change: "+12%",
+      //positive: true
     },
     {
       title: "Productos más vistos",
       value: statsData.topProducts.toString(),
       icon: <BarChart size={20} />
     },
-    {
-      title: "Contactos recibidos",
-      value: statsData.contacts.toString(),
-      icon: <Users size={20} />,
-      change: "+5",
-      positive: true
-    }
+    // {
+    //   title: "Contactos recibidos",
+    //   value: statsData.contacts.toString(),
+    //   icon: <Users size={20} />,
+    //   // change: "+5",
+    //   // positive: true
+    // }
   ];
 
   const actions = [
