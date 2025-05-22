@@ -32,6 +32,7 @@ const ProductForm: React.FC = () => {
     category_id: '',
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,8 @@ const ProductForm: React.FC = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
+  const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 
   useEffect(() => {
     if (user) {
@@ -123,6 +126,12 @@ const ProductForm: React.FC = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        setError('La imagen no debe superar los 2MB');
+        return;
+      }
+
+      setImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
@@ -130,6 +139,31 @@ const ProductForm: React.FC = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    if (!businessId) return null;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${businessId}/${Date.now()}.${fileExt}`;
+      const filePath = `business-assets/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('business-assets')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('business-assets')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (err) {
+      console.error('Error al subir la imagen:', err);
+      throw new Error('Error al subir la imagen');
     }
   };
 
@@ -144,6 +178,11 @@ const ProductForm: React.FC = () => {
     setError(null);
 
     try {
+      let imageUrl = null;
+      if (imageFile) {
+        imageUrl = await uploadImage(imageFile);
+      }
+
       const productData = {
         name: formData.name,
         description: formData.description,
@@ -151,6 +190,7 @@ const ProductForm: React.FC = () => {
         stock: formData.stock ? parseInt(formData.stock) : null,
         category_id: formData.category_id,
         business_id: businessId,
+        image_url: imageUrl,
       };
 
       if (isEditing) {
@@ -371,7 +411,10 @@ const ProductForm: React.FC = () => {
                         />
                         <button
                           type="button"
-                          onClick={() => setImagePreview(null)}
+                          onClick={() => {
+                            setImagePreview(null);
+                            setImageFile(null);
+                          }}
                           className="absolute top-2 right-2 bg-white text-gray-700 rounded-full h-6 w-6 flex items-center justify-center hover:bg-gray-100"
                         >
                           ×
