@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -41,6 +43,23 @@ const Sidebar: React.FC = () => {
   const location = useLocation();
   const path = location.pathname;
   const { signOut } = useAuth();
+
+  const { data: business } = useQuery({
+    queryKey: ['business'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: "Inicio", to: "/dashboard" },
@@ -84,10 +103,16 @@ const Sidebar: React.FC = () => {
       </div>
 
       <div className="p-4 border-t">
-        <Link to="/dashboard/preview" className="hidden flex items-center gap-2 text-primary hover:text-primary/90 transition-colors mb-4">
-          <Eye size={18} />
-          <span>Ver catálogo público</span>
-        </Link>
+        {business && (
+          <Link 
+            to={`/catalogo/${business.id}`} 
+            target="_blank"
+            className="flex items-center gap-2 text-primary hover:text-primary/90 transition-colors mb-4"
+          >
+            <Eye size={18} />
+            <span>Ver catálogo público</span>
+          </Link>
+        )}
         <Button 
           variant="outline" 
           className="w-full flex items-center gap-2 justify-center"

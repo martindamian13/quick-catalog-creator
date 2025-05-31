@@ -13,6 +13,7 @@ import Products from "./pages/Products";
 import ProductForm from "./pages/ProductForm";
 import Settings from "./pages/Settings";
 import PublicCatalog from "./pages/PublicCatalog";
+import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -35,7 +36,7 @@ const App = () => (
             <Route path="/dashboard/productos/:id" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
             <Route path="/dashboard/configuracion" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/catalogo/:id" element={<PublicCatalog />} />
-            <Route path="/demo" element={<PublicCatalog />} />
+            <Route path="/demo" element={<Demo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
