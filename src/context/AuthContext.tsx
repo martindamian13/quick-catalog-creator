@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         // Manejar notificaciones de cambio de estado
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && !session) {
           console.log('AuthProvider: Usuario inició sesión');
           toast({
             title: "¡Bienvenido!",
