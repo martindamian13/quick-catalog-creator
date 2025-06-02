@@ -232,7 +232,7 @@ const PublicCatalog: React.FC = () => {
                   <p className="text-gray-600 text-sm line-clamp-2 mt-1 mb-2">
                     {product.description}
                   </p>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col items-center justify-between">
                     <span className="font-bold" style={{ color: businessInfo.primary_color || "#55C3F0" }}>
                       ${product.price}
                     </span>

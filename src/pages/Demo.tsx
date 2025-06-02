@@ -11,7 +11,7 @@ const Demo: React.FC = () => {
     name: "Mi Tienda Online",
     logo: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9",
     description: "Ofrecemos productos de calidad para nuestros clientes. Envíos a toda la ciudad.",
-    primaryColor: "#7753F0",
+    primaryColor: "#33C3F0",
     contact: {
       phone: "+595 973 229 057",
       email: "martinquintana668@gmail.com",
@@ -31,7 +31,7 @@ const Demo: React.FC = () => {
     id: i + 1,
     name: `Producto ${i + 1}`,
     description: `Descripción del producto ${i + 1}. Características y detalles importantes.`,
-    price: (Math.random() * 100 + 10).toFixed(2),
+    price: (Math.random() * 100000 + 10).toFixed(0),
     image: `https://images.unsplash.com/photo-1618160702438-9b02ab6515c9`,
     category: `cat${(i % 3) + 1}`
   }));
@@ -156,9 +156,9 @@ const Demo: React.FC = () => {
                   <p className="text-gray-600 text-sm line-clamp-2 mt-1 mb-2">
                     {product.description}
                   </p>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col items-center justify-between">
                     <span className="font-bold" style={{ color: businessInfo.primaryColor }}>
-                      ${product.price}
+                      Gs. {product.price}
                     </span>
                     
                     {businessInfo.contact.whatsapp && (
