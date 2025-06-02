@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -34,15 +33,15 @@ const Hero: React.FC = () => {
           <div className="flex-1">
             <div className="relative">
               <img 
-                src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b" 
+                src="/images/web-catalog.png" 
                 alt="Catálogo en laptop y móvil" 
-                className="rounded-lg shadow-2xl max-w-full"
+                className="rounded-lg shadow-2xl w-full h-auto object-contain"
               />
-              <div className="absolute -bottom-10 -right-10 md:bottom-[-20%] md:right-[-10%] w-[60%]">
+              <div className="absolute -bottom-4 -right-8 md:bottom-[-25%] md:right-[-5%] w-[45%]">
                 <img 
-                  src="https://images.unsplash.com/photo-1531297484001-80022131f5a1" 
+                  src="/images/movil-catalog.png" 
                   alt="Vista móvil del catálogo" 
-                  className="rounded-lg shadow-xl"
+                  className="rounded-lg shadow-xl w-full h-auto object-contain"
                 />
               </div>
             </div>
